@@ -24,6 +24,12 @@ If startup fails, check that `MONGODB_URI` is a complete MongoDB URI, that the A
 
 The server listens on all network interfaces so a phone or tablet on the same Wi-Fi can connect using `http://<computer-local-IP>:3000`. Keep the computer and server running. Windows Firewall may ask permission for Node.js on your private network. Do not expose the development HTTP server directly to the public internet; use HTTPS and a properly secured deployment for remote access outside your local network.
 
+## Deploy to Render
+
+This repository includes a `render.yaml` Blueprint for deploying the Express server and frontend as one Render web service. In Render, create a new **Blueprint** and connect this GitHub repository. When prompted, enter `MONGODB_URI` as a secret environment variable; do not commit it to GitHub. The Blueprint sets production cookies, enables proxy support, and generates a unique `SESSION_SECRET`. Set the MongoDB Atlas Network Access list to allow connections from Render (Atlas may require `0.0.0.0/0` for Render's dynamic outbound IPs; use a private network option if available and appropriate).
+
+After deployment, open the Render service URL. The login/register page is at `/` and the task dashboard is at `/dashboard`. Render's free web services may sleep when idle and take time to wake.
+
 ## Data and security
 
 - Tasks and sessions are stored in MongoDB. Each account can access only its own tasks.
