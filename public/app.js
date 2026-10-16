@@ -25,6 +25,7 @@ const editForm = document.querySelector("#edit-form");
 const filterStatus = document.querySelector("#filter-status");
 const filterPriority = document.querySelector("#filter-priority");
 const filterCategory = document.querySelector("#filter-category");
+const isStaticPreview = window.location.hostname.endsWith(".github.io");
 
 let tasks = [];
 let stats = { total: 0, completed: 0, pending: 0, completionPercent: 0 };
@@ -35,6 +36,13 @@ const isDashboardPage = window.location.pathname === "/dashboard";
 authPanel.hidden = isDashboardPage;
 application.hidden = true;
 pageLoading.hidden = !isDashboardPage;
+
+if (isStaticPreview) {
+  setMessage(authNotice, "Static preview only. Sign-in and task features need the TaskMate server.", false);
+  for (const control of document.querySelectorAll("#login-form input, #login-form button, #register-form input, #register-form button")) {
+    control.disabled = true;
+  }
+}
 
 async function api(url, options = {}) {
   const headers = new Headers(options.headers || {});
@@ -434,4 +442,4 @@ async function restoreSession() {
   }
 }
 
-restoreSession();
+if (!isStaticPreview) restoreSession();

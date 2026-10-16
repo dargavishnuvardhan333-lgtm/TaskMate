@@ -69,6 +69,27 @@
       margin: 34px auto 56px;
     }
 
+    .site-footer {
+      padding: 0 16px 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .site-footer a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .site-footer a:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
     .task-form,
     .progress-panel {
       padding: 22px;
@@ -670,6 +691,12 @@
     </dialog>
   </main>
 
-  <script src="/app.js" defer></script>
+  <footer class="site-footer">
+    <a href="https://dargavishnuvardhan333-lgtm.github.io/TaskMate/" target="_blank" rel="noopener noreferrer">
+      Open GitHub Pages preview
+    </a>
+  </footer>
+
+  <script src="./app.js" defer></script>
 </body>
 </html>

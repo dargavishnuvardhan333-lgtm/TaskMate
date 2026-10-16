@@ -37,6 +37,28 @@ function publicTask(task) {
   };
 }
 
+async function getDatabaseHealth(connection) {
+  if (connection.readyState !== 1 || !connection.db) {
+    return {
+      statusCode: 503,
+      body: { status: "unavailable", database: "disconnected" }
+    };
+  }
+
+  try {
+    await connection.db.admin().ping();
+    return {
+      statusCode: 200,
+      body: { status: "ok", database: "connected" }
+    };
+  } catch {
+    return {
+      statusCode: 503,
+      body: { status: "unavailable", database: "disconnected" }
+    };
+  }
+}
+
 function createApp({ mongoUrl, sessionSecret, secureCookies = false, trustProxy = false }) {
   const app = express();
   if (trustProxy) app.set("trust proxy", 1);
@@ -50,6 +72,11 @@ function createApp({ mongoUrl, sessionSecret, secureCookies = false, trustProxy 
     }
   }));
   app.use(express.json({ limit: "2mb", type: "application/json" }));
+  app.get("/api/health", async (request, response) => {
+    const health = await getDatabaseHealth(mongoose.connection);
+    return response.status(health.statusCode).json(health.body);
+  });
+
   app.use(
     session({
       name: "taskmate.sid",
@@ -94,14 +121,6 @@ function createApp({ mongoUrl, sessionSecret, secureCookies = false, trustProxy 
     standardHeaders: "draft-7",
     legacyHeaders: false,
     message: { error: "Too many authentication attempts. Try again later." }
-  });
-
-  app.get("/api/health", (request, response) => {
-    const connected = mongoose.connection.readyState === 1;
-    response.status(connected ? 200 : 503).json({
-      status: connected ? "ok" : "unavailable",
-      database: connected ? "connected" : "disconnected"
-    });
   });
 
   app.post("/api/auth/register", authLimiter, async (request, response, next) => {
@@ -366,4 +385,4 @@ function regenerateSession(request) {
   });
 }
 
-module.exports = { createApp };
+module.exports = { createApp, getDatabaseHealth };

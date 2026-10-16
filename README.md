@@ -30,9 +30,13 @@ This repository includes a `render.yaml` Blueprint for deploying the Express ser
 
 Set `MONGODB_URI` in the Render service's **Environment** settings using the Atlas connection string; never commit it or send it in chat. The Blueprint sets `NODE_ENV=production`, enables trusted-proxy handling, and generates a unique `SESSION_SECRET`; Render supplies `PORT`. If `MONGODB_URI` is missing, the build can succeed but the service will exit during startup.
 
-In MongoDB Atlas, create a database user with only the privileges TaskMate needs (normally `readWrite` on the TaskMate database). Under **Network Access**, allow the outbound ranges shown for this Render service. The ranges provided for this service are `74.220.48.0/24` and `74.220.56.0/24`; verify them against the Render dashboard because outbound ranges can vary by region or service configuration. These ranges are shared by Render services, so use Atlas private networking or a dedicated Render IP if your plan supports it and you need tighter network isolation. Do not use `0.0.0.0/0` unless you intentionally accept allowing connections from every IPv4 address.
+In MongoDB Atlas, create a database user with only the privileges TaskMate needs (normally `readWrite` on the TaskMate database). Under **Network Access**, allow only the current outbound ranges shown in this Render service's **Connect → Outbound** panel. Render ranges vary by region and service configuration, so do not rely on ranges copied from old notes. These ranges are shared by Render services; use Atlas private networking or a dedicated Render IP if your plan supports it and tighter network isolation is required. Avoid `0.0.0.0/0`.
 
 After deployment, open the Render service URL. The login/register page is at `/` and the task dashboard is at `/dashboard`. Render's free web services may sleep when idle and take time to wake.
+
+## GitHub Pages preview
+
+GitHub Pages can publish the static frontend as a visual preview at `https://dargavishnuvardhan333-lgtm.github.io/TaskMate/`; it cannot run this Node.js server or connect directly to MongoDB. The preview explicitly disables login and task actions. To enable publication, open the repository's **Settings → Pages**, select **GitHub Actions** as the build and deployment source, and push the Pages workflow to `main`. This does not replace the Render deployment.
 
 ## Data and security
 
