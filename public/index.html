@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080a10">
+  <link rel="icon" href="data:,">
+  <title>TaskMate - Your Friendly Task Manager</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #080a10;
+      color: #f4f5f7;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      --gold: #ffc247;
+      --gold-deep: #f39a26;
+      --muted: #a4a8b2;
+      --navy: #101a30;
+      --card: #242832;
+      --border: #343a46;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background: #080a10;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .site-header {
+      padding: 30px 24px 28px;
+      background: var(--navy);
+      border-bottom: 1px solid #202c43;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(2rem, 5vw, 2.7rem);
+      letter-spacing: -1.3px;
+    }
+
+    .accent {
+      color: #3B82F6;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: #c3c8d2;
+      font-size: 1rem;
+    }
+
+    main {
+      width: min(760px, calc(100% - 32px));
+      margin: 34px auto 56px;
+    }
+
+    .task-form,
+    .progress-panel {
+      padding: 22px;
+      border: 1px solid #252b37;
+      border-radius: 12px;
+      background: #11141c;
+    }
+
+    .task-form {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 12px;
+      color: #f4f5f7;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      outline: none;
+      background: #191d27;
+    }
+
+    textarea {
+      min-height: 78px;
+      padding-top: 11px;
+      resize: vertical;
+    }
+
+    input::placeholder {
+      color: #858b97;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgb(255 194 71 / 14%);
+    }
+
+    button {
+      min-height: 42px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 7px;
+      color: #211707;
+      background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+      cursor: pointer;
+      font-weight: 700;
+      transition: filter 120ms ease, transform 120ms ease;
+    }
+
+    button:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    button:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    .progress-panel {
+      margin-top: 18px;
+    }
+
+    .auth-panel,
+    .application {
+      padding: 22px;
+      border: 1px solid #252b37;
+      border-radius: 12px;
+      background: #11141c;
+    }
+
+    .auth-panel h2 {
+      margin-bottom: 8px;
+    }
+
+    .auth-panel > p {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 9px;
+      margin-bottom: 16px;
+    }
+
+    .auth-tabs button,
+    .secondary-button {
+      color: #e7eaf0;
+      border: 1px solid var(--border);
+      background: #222734;
+    }
+
+    .auth-tabs button[aria-selected="true"] {
+      color: #211707;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 11px;
+    }
+
+    .auth-form label,
+    .task-form label,
+    .task-filters label,
+    .edit-form label {
+      display: grid;
+      gap: 6px;
+      color: #d6d9e0;
+      font-size: 0.9rem;
+    }
+
+    .session-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 16px;
+      color: #d4d8e0;
+      font-size: 0.9rem;
+    }
+
+    .session-bar button {
+      min-height: 34px;
+      padding: 0 12px;
+    }
+
+    .notice {
+      margin: 12px 0 0;
+      color: #a9d5ad;
+      font-size: 0.92rem;
+    }
+
+    .notice.error {
+      color: #ffb1a7;
+    }
+
+    .loading-state {
+      padding: 24px 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .task-title-field {
+      grid-column: span 2;
+    }
+
+    .task-description-field {
+      grid-column: 1 / -1;
+    }
+
+    .task-form > button {
+      align-self: end;
+    }
+
+    .task-filters {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .task-description {
+      margin: 7px 0 0;
+      color: #c0c4cd;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .task-date {
+      color: #bec3cc;
+      font-size: 0.8rem;
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 13px;
+      color: #b9bec9;
+      font-size: 0.82rem;
+    }
+
+    dialog {
+      width: min(520px, calc(100% - 28px));
+      max-height: min(90vh, 760px);
+      padding: 22px;
+      overflow: auto;
+      color: #f4f5f7;
+      border: 1px solid #414754;
+      border-radius: 12px;
+      background: #151923;
+    }
+
+    dialog::backdrop {
+      background: rgb(0 0 0 / 72%);
+    }
+
+    .edit-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .edit-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+      margin-top: 4px;
+    }
+
+    .progress-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 13px;
+      color: #e6e8ec;
+      font-size: 0.95rem;
+    }
+
+    .progress-count {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #292e39;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #f39a26, #ffd35d);
+      transition: width 200ms ease;
+    }
+
+    .list-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 2px 14px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .clear-button {
+      min-height: 36px;
+      padding: 0 12px;
+      font-size: 0.85rem;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 11px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .task-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 17px;
+      border: 1px solid #343944;
+      border-radius: 10px;
+      background: var(--card);
+    }
+
+    .task-card.is-complete .task-name {
+      color: #9b9faa;
+      text-decoration: line-through;
+    }
+
+    .task-details {
+      min-width: 0;
+    }
+
+    .task-name {
+      margin: 0;
+      overflow-wrap: anywhere;
+      color: #f3f4f6;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .task-tag {
+      padding: 4px 8px;
+      border: 1px solid #454b58;
+      border-radius: 99px;
+      color: #d1d4db;
+      font-size: 0.74rem;
+    }
+
+    .task-tag.priority-high {
+      color: #ffb1a7;
+      border-color: #78483f;
+    }
+
+    .task-tag.priority-medium {
+      color: #ffd274;
+      border-color: #75613c;
+    }
+
+    .task-actions {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+    }
+
+    .task-actions button {
+      min-height: 36px;
+      padding: 0 11px;
+      font-size: 0.82rem;
+    }
+
+    .delete-button {
+      color: #f5d9d6;
+      border: 1px solid #62504f;
+      background: #393033;
+    }
+
+    .empty-state {
+      padding: 30px 18px;
+      border: 1px dashed #343a46;
+      border-radius: 10px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .storage-error {
+      margin: 12px 2px 0;
+      color: #ffb1a7;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 680px) {
+      .task-form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .task-title-field,
+      .task-description-field {
+        grid-column: 1 / -1;
+      }
+
+      .task-form button {
+        grid-column: 1 / -1;
+      }
+
+      .task-filters {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .site-header {
+        padding: 25px 16px 23px;
+      }
+
+      main {
+        margin-top: 22px;
+      }
+
+      .task-form,
+      .progress-panel {
+        padding: 16px;
+      }
+
+      .task-card {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .task-actions {
+        width: 100%;
+      }
+
+      .task-actions button {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Task<span class="accent">Mate</span></h1>
+    <p class="subtitle">Your friendly task manager · Syncs across your devices</p>
+  </header>
+
+  <main>
+    <p class="notice error" id="page-loading" role="status" hidden>Checking your session...</p>
+    <section class="auth-panel" id="auth-panel">
+      <h2 id="auth-heading">Welcome to TaskMate</h2>
+      <p>Sign in or create an account to manage and sync your tasks.</p>
+      <div class="auth-tabs" role="tablist" aria-label="Account actions">
+        <button type="button" id="login-tab" role="tab" aria-selected="true" aria-controls="login-form">Log in</button>
+        <button type="button" id="register-tab" role="tab" aria-selected="false" aria-controls="register-form">Register</button>
+      </div>
+      <form class="auth-form" id="login-form">
+        <label>Email
+          <input name="email" type="email" autocomplete="email" maxlength="254" required>
+        </label>
+        <label>Password
+          <input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required>
+        </label>
+        <button type="submit">Log in</button>
+      </form>
+      <form class="auth-form" id="register-form" hidden>
+        <label>Name
+          <input name="name" type="text" autocomplete="name" minlength="2" maxlength="80" required>
+        </label>
+        <label>Email
+          <input name="email" type="email" autocomplete="email" maxlength="254" required>
+        </label>
+        <label>Password (at least 8 characters)
+          <input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+        </label>
+        <button type="submit">Create account</button>
+      </form>
+      <p class="notice error" id="auth-notice" role="alert" hidden></p>
+    </section>
+
+    <section class="application" id="application" hidden>
+      <div class="session-bar">
+        <span id="user-greeting"></span>
+        <button class="secondary-button" id="logout-button" type="button">Log out</button>
+      </div>
+      <p class="notice" id="app-notice" role="status" hidden></p>
+      <p class="notice error" id="app-error" role="alert" hidden></p>
+      <form class="task-form" id="task-form">
+        <label class="task-title-field" for="task-title">Title
+          <input id="task-title" name="title" type="text" maxlength="200" placeholder="What needs to get done?" required>
+        </label>
+        <label for="task-priority">Priority
+          <select id="task-priority" name="priority">
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="High">High</option>
+          </select>
+        </label>
+        <label for="task-category">Category
+          <select id="task-category" name="category">
+            <option value="Personal">Personal</option>
+            <option value="Work">Work</option>
+            <option value="Study">Study</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label for="task-due-date">Due date
+          <input id="task-due-date" name="dueDate" type="date">
+        </label>
+        <label class="task-description-field" for="task-description">Description
+          <textarea id="task-description" name="description" maxlength="2000" placeholder="Add details (optional)"></textarea>
+        </label>
+        <label class="task-description-field" for="task-status">Status
+          <select id="task-status" name="status">
+            <option value="pending" selected>Pending</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </label>
+        <button type="submit" id="submit-task-button">Add Task</button>
+      </form>
+
+      <div class="task-filters" aria-label="Filter tasks">
+        <label for="filter-status">Filter by status
+          <select id="filter-status">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </label>
+        <label for="filter-priority">Filter by priority
+          <select id="filter-priority">
+            <option value="">All priorities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </label>
+        <label for="filter-category">Filter by category
+          <select id="filter-category">
+            <option value="">All categories</option>
+            <option value="Personal">Personal</option>
+            <option value="Work">Work</option>
+            <option value="Study">Study</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+      </div>
+      <p class="loading-state" id="loading-state" role="status" hidden>Loading tasks...</p>
+      <section class="progress-panel" aria-label="Task progress">
+        <div class="progress-heading">
+          <strong>Completed</strong>
+          <span class="progress-count" id="progress-count" aria-live="polite">0 of 0 tasks</span>
+        </div>
+        <div
+          class="progress-track"
+          id="progress-track"
+          role="progressbar"
+          aria-label="Tasks completed"
+          aria-valuemin="0"
+          aria-valuemax="0"
+          aria-valuenow="0"
+        >
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="stats-row" id="stats-row" aria-live="polite"></div>
+      </section>
+
+      <div class="list-heading">
+        <h2>Your Tasks</h2>
+        <button class="clear-button" id="clear-button" type="button">Clear All Tasks</button>
+      </div>
+      <ul class="task-list" id="task-list" aria-live="polite"></ul>
+    </section>
+
+    <dialog id="edit-dialog" aria-labelledby="edit-heading">
+      <h2 id="edit-heading">Edit task</h2>
+      <form class="edit-form" id="edit-form">
+        <label for="edit-title">Title
+          <input id="edit-title" name="title" type="text" maxlength="200" required>
+        </label>
+        <label for="edit-description">Description
+          <textarea id="edit-description" name="description" maxlength="2000"></textarea>
+        </label>
+        <label for="edit-priority">Priority
+          <select id="edit-priority" name="priority">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </label>
+        <label for="edit-category">Category
+          <select id="edit-category" name="category">
+            <option value="Personal">Personal</option>
+            <option value="Work">Work</option>
+            <option value="Study">Study</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label for="edit-due-date">Due date
+          <input id="edit-due-date" name="dueDate" type="date">
+        </label>
+        <label for="edit-status">Status
+          <select id="edit-status" name="status">
+            <option value="pending">Pending</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </label>
+        <div class="edit-actions">
+          <button class="secondary-button" id="cancel-edit-button" type="button">Cancel</button>
+          <button type="submit">Save changes</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
