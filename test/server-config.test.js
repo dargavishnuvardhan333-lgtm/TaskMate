@@ -23,7 +23,10 @@ test("loads MongoDB, session, port, and deployment settings from the environment
 });
 
 test("rejects missing or placeholder MongoDB connection strings", () => {
-  assert.throws(() => readConfig({ ...validEnvironment, MONGODB_URI: "" }), /MONGODB_URI/);
+  assert.throws(
+    () => readConfig({ ...validEnvironment, MONGODB_URI: "" }),
+    (error) => error.message.includes("MONGODB_URI") && !error.message.includes(".env file")
+  );
   assert.throws(
     () => readConfig({ ...validEnvironment, MONGODB_URI: "mongodb+srv://<username>:<password>@<cluster-host>" }),
     /placeholders replaced/

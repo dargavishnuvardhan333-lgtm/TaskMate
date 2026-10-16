@@ -8,8 +8,12 @@ function readConfig(env = process.env) {
   const sessionSecret = env.SESSION_SECRET;
   const port = Number(env.PORT || 3000);
 
-  if (!mongoUrl) throw new Error("Set MONGODB_URI in the .env file before starting TaskMate.");
-  if (!sessionSecret) throw new Error("Set SESSION_SECRET in the .env file before starting TaskMate.");
+  if (!mongoUrl) {
+    throw new Error("Set MONGODB_URI in the environment before starting TaskMate (use .env for local development).");
+  }
+  if (!sessionSecret) {
+    throw new Error("Set SESSION_SECRET in the environment before starting TaskMate (use .env for local development).");
+  }
   if (!/^mongodb(?:\+srv)?:\/\/\S+$/i.test(mongoUrl) || /[<>]/.test(mongoUrl)) {
     throw new Error("MONGODB_URI must be a valid MongoDB connection string with all placeholders replaced.");
   }

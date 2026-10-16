@@ -26,7 +26,11 @@ The server listens on all network interfaces so a phone or tablet on the same Wi
 
 ## Deploy to Render
 
-This repository includes a `render.yaml` Blueprint for deploying the Express server and frontend as one Render web service. In Render, create a new **Blueprint** and connect this GitHub repository. When prompted, enter `MONGODB_URI` as a secret environment variable; do not commit it to GitHub. The Blueprint sets production cookies, enables proxy support, and generates a unique `SESSION_SECRET`. Set the MongoDB Atlas Network Access list to allow connections from Render (Atlas may require `0.0.0.0/0` for Render's dynamic outbound IPs; use a private network option if available and appropriate).
+This repository includes a `render.yaml` Blueprint for deploying the Express server, API, and static frontend as one Render web service. In Render, create a new **Blueprint** and connect this GitHub repository. Use the repository root as the service root directory, `npm ci` as the build command, `npm start` as the start command, and `/api/health` as the health-check path. There is no separate frontend build step: Express serves the files in `public/`.
+
+Set `MONGODB_URI` in the Render service's **Environment** settings using the Atlas connection string; never commit it or send it in chat. The Blueprint sets `NODE_ENV=production`, enables trusted-proxy handling, and generates a unique `SESSION_SECRET`; Render supplies `PORT`. If `MONGODB_URI` is missing, the build can succeed but the service will exit during startup.
+
+In MongoDB Atlas, create a database user with only the privileges TaskMate needs (normally `readWrite` on the TaskMate database). Under **Network Access**, allow the outbound ranges shown for this Render service. The ranges provided for this service are `74.220.48.0/24` and `74.220.56.0/24`; verify them against the Render dashboard because outbound ranges can vary by region or service configuration. These ranges are shared by Render services, so use Atlas private networking or a dedicated Render IP if your plan supports it and you need tighter network isolation. Do not use `0.0.0.0/0` unless you intentionally accept allowing connections from every IPv4 address.
 
 After deployment, open the Render service URL. The login/register page is at `/` and the task dashboard is at `/dashboard`. Render's free web services may sleep when idle and take time to wake.
 
